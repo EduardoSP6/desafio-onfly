@@ -22,12 +22,22 @@ docker exec -it desafio-onfly-php composer install
 docker exec -it desafio-onfly-php php artisan key:generate
 ```
 
-- Executar comando para gerar JWT Secret:
+- Gerar JWT Secret:
 ```
 docker exec -it desafio-onfly-php php artisan jwt:secret
 ```
 
-- Executar comando para criar as tabelas e seed de usuários:
+- Criar as tabelas e seed de usuários:
 ```
 docker exec -it desafio-onfly-php php artisan migrate --seed
+```
+
+- Executar análise estática do código com PHP-Stan:
+```
+docker exec -it desafio-onfly-php composer analyse
+```
+
+- Comando para executar os testes do PHPUnit:
+```
+docker exec -it desafio-onfly-php php artisan test
 ```

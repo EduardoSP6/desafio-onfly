@@ -14,10 +14,12 @@ class LoginUseCase
             'password' => $inputDto->password
         ];
 
-        if (!$token = Auth::attempt($credentials)) {
+        $token = Auth::attempt($credentials);
+
+        if (!$token) {
             throw new UnauthorizedException();
         }
 
-        return new LoginOutputDto($token);
+        return new LoginOutputDto((string)$token);
     }
 }
