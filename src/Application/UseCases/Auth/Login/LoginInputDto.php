@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\UseCase\Auth\Login;
+namespace Application\UseCases\Auth\Login;
 
 final class LoginInputDto
 {

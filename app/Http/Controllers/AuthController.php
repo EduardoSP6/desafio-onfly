@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Requests\Auth\RegisterUserRequest;
 use App\Http\Resources\LoginResource;
 use App\Http\Resources\UserResource;
 use Application\Exception\UnauthorizedException;
-use Application\UseCase\Auth\Login\LoginInputDto;
-use Application\UseCase\Auth\Login\LoginUseCase;
+use Application\UseCases\Auth\Login\LoginInputDto;
+use Application\UseCases\Auth\Login\LoginUseCase;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;

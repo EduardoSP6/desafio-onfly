@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\UseCase\Auth\Login;
+namespace Application\UseCases\Auth\Login;
 
 use Application\Exception\UnauthorizedException;
 use Illuminate\Support\Facades\Auth;

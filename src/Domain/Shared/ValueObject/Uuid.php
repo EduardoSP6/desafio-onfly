@@ -9,9 +9,9 @@ final class Uuid
 {
     private readonly string $uuid;
 
-    public function __construct()
+    public function __construct(?string $uuid = null)
     {
-        $this->uuid = Str::orderedUuid()->toString();
+        $this->uuid = $uuid ?? Str::orderedUuid()->toString();
         $this->validate();
     }
 
