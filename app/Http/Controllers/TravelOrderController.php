@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TravelOrders\CreateTravelOrderRequest;
+use App\Http\Resources\TravelOrderResource;
 use Application\Exception\DuplicatedTravelOrderException;
 use Application\UseCases\TravelOrder\Create\CreateTravelOrderInputDto;
 use Application\UseCases\TravelOrder\Create\CreateTravelOrderUseCase;
+use Application\UseCases\TravelOrder\Find\FindTravelOrderUseCase;
 use DateTimeImmutable;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -45,5 +47,15 @@ class TravelOrderController extends Controller
         } catch (Exception $e) {
             abort(422, $e->getMessage());
         }
+    }
+
+    public function show(string $orderId): TravelOrderResource
+    {
+        $travelOrder = (new FindTravelOrderUseCase($this->travelOrderEloquentRepository))
+            ->execute($orderId);
+
+        abort_if(!$travelOrder, 404, "Registro não encontrado");
+
+        return new TravelOrderResource($travelOrder);
     }
 }

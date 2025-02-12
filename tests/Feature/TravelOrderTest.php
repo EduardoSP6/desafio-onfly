@@ -46,4 +46,27 @@ class TravelOrderTest extends TestCase
 
         $response->assertCreated();
     }
+
+    public function test_it_should_find_a_travel_order_by_order_id_successfully()
+    {
+        $orderId = "17394012135715";
+
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders/$orderId");
+
+        $response->assertOk()->assertJsonStructure([
+            'uuid',
+            'orderId',
+            'userName',
+            'destination',
+            'departureDate',
+            'returnDate',
+            'status',
+            'statusDescription',
+        ]);
+    }
 }
