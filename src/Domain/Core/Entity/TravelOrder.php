@@ -2,6 +2,8 @@
 
 namespace Domain\Core\Entity;
 
+use Application\Exception\InvalidTravelOrderStatusException;
+use Application\Exception\OperationNotPermittedException;
 use DateTimeImmutable;
 use Domain\Core\Enum\TravelOrderStatus;
 use Domain\Shared\Entity\BaseEntity;
@@ -102,8 +104,15 @@ class TravelOrder extends BaseEntity
     public function changeStatus(TravelOrderStatus $status, User $loggedUser): void
     {
         throw_if($this->user->getUuid()->value() === $loggedUser->getUuid()->value(),
-            new DomainException(
+            new OperationNotPermittedException(
                 "O status do pedido não pode ser alterado pelo solicitante."
+            )
+        );
+
+        throw_if(
+            in_array($this->status, [TravelOrderStatus::APPROVED, TravelOrderStatus::CANCELLED]),
+            new InvalidTravelOrderStatusException(
+                "Pedido com status " . $this->status->getDescription() . " não pode ser alterado."
             )
         );
 

@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use Application\Exception\InvalidTravelOrderStatusException;
+use Application\Exception\OperationNotPermittedException;
 use DateInterval;
 use DateTimeImmutable;
 use Domain\Core\Entity\TravelOrder;
@@ -49,7 +51,7 @@ class TravelOrderTest extends TestCase
 
     public function test_it_should_fail_to_change_travel_order_status_by_requester_user()
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(OperationNotPermittedException::class);
 
         $travelOrder = TravelOrderFactory::createOne();
 
@@ -58,5 +60,17 @@ class TravelOrderTest extends TestCase
         $loggedUser = $travelOrder->getUser();
 
         $travelOrder->changeStatus(TravelOrderStatus::APPROVED, $loggedUser);
+    }
+
+    public function test_it_should_fail_to_change_travel_order_status_when_it_is_approved_or_cancelled()
+    {
+        $this->expectException(InvalidTravelOrderStatusException::class);
+
+        $travelOrder = TravelOrderFactory::createOne();
+        $loggedUser = UserFactory::createOne();
+
+        $travelOrder->changeStatus(TravelOrderStatus::APPROVED, $loggedUser);
+
+        $travelOrder->changeStatus(TravelOrderStatus::CANCELLED, $loggedUser);
     }
 }

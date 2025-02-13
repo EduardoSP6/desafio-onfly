@@ -36,7 +36,7 @@ class TravelOrderEloquentRepository implements TravelOrderRepository
     public function updateStatus(TravelOrder $travelOrder): void
     {
         TravelOrderModel::query()
-            ->where('uuid', '=', $travelOrder->getUuid())
+            ->where('uuid', '=', $travelOrder->getUuid()->value())
             ->update([
                 'status' => $travelOrder->getStatus()->value
             ]);

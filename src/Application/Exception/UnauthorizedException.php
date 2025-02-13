@@ -2,7 +2,9 @@
 
 namespace Application\Exception;
 
-class UnauthorizedException extends \Illuminate\Validation\UnauthorizedException
+use RuntimeException;
+
+class UnauthorizedException extends RuntimeException
 {
     protected $code = 401;
     protected $message = "Credenciais incorretas";

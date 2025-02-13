@@ -102,8 +102,6 @@ class TravelOrderTest extends TestCase
             ])
             ->get("/api/v1/travel-orders?filter[destination]=South");
 
-        dump($response->json());
-
         $response->assertOk()->assertJsonStructure([
             '*' => [
                 'uuid',
@@ -126,8 +124,6 @@ class TravelOrderTest extends TestCase
                 'Authorization' => 'Bearer ' . $this->token
             ])
             ->get("/api/v1/travel-orders?filter[status]=requested");
-
-        dump($response->json());
 
         $response->assertOk()->assertJsonStructure([
             '*' => [
