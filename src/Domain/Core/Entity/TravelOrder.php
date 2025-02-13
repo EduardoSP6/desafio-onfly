@@ -103,9 +103,9 @@ class TravelOrder extends BaseEntity
 
     public function changeStatus(TravelOrderStatus $status, User $loggedUser): void
     {
-        throw_if($this->user->getUuid()->value() === $loggedUser->getUuid()->value(),
+        throw_if(!$loggedUser->isAdmin(),
             new OperationNotPermittedException(
-                "O status do pedido não pode ser alterado pelo solicitante."
+                "Você não possui permissão para alterar status do pedido."
             )
         );
 

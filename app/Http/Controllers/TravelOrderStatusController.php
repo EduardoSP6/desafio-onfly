@@ -57,7 +57,7 @@ class TravelOrderStatusController extends Controller
      *              @OA\Property(
      *                  property="message",
      *                  type="string",
-     *                  description="O status do pedido não pode ser alterado pelo solicitante."
+     *                  description="Você não possui permissão para alterar status do pedido."
      *              ),
      *          ),
      *    ),
@@ -127,7 +127,7 @@ class TravelOrderStatusController extends Controller
      *              @OA\Property(
      *                  property="message",
      *                  type="string",
-     *                  description="O status do pedido não pode ser alterado pelo solicitante."
+     *                  description="Você não possui permissão para alterar status do pedido."
      *              ),
      *          ),
      *    ),

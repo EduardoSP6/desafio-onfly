@@ -10,26 +10,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class TravelOrderStatusTest extends TestCase
 {
-    private User $user;
-    private string $token;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->user = User::query()->firstWhere('is_admin', '=', true);
-        $this->token = JWTAuth::fromUser($this->user);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        unset($this->user, $this->token);
-    }
-
     public function test_it_should_approve_a_travel_order()
     {
+        $user = User::query()->firstWhere('is_admin', '=', true);
+        $token = JWTAuth::fromUser($user);
+
         /** @var TravelOrder $travelOrder */
         $travelOrder = TravelOrder::query()->first();
 
@@ -38,15 +23,63 @@ class TravelOrderStatusTest extends TestCase
         $response = $this
             ->withHeaders([
                 'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $this->token
+                'Authorization' => 'Bearer ' . $token
             ])
             ->patch("/api/v1/travel-orders/$travelOrder->order_id/approve");
 
-        $response->assertOk();
+        $response->assertOk()->assertJson([
+            "message" => "Pedido aprovado com sucesso"
+        ]);
+    }
+
+    public function test_it_should_fail_to_approve_a_travel_order_with_not_admin_user()
+    {
+        $user = User::query()->firstWhere('is_admin', '=', false);
+        $token = JWTAuth::fromUser($user);
+
+        /** @var TravelOrder $travelOrder */
+        $travelOrder = TravelOrder::query()->first();
+
+        $this->assertNotNull($travelOrder);
+
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token
+            ])
+            ->patch("/api/v1/travel-orders/$travelOrder->order_id/approve");
+
+        $response->assertForbidden()->assertJson([
+            "message" => "Você não possui permissão para alterar status do pedido."
+        ]);
+    }
+
+    public function test_it_should_fail_to_approve_a_already_approved_travel_order()
+    {
+        $user = User::query()->firstWhere('is_admin', '=', true);
+        $token = JWTAuth::fromUser($user);
+
+        /** @var TravelOrder $travelOrder */
+        $travelOrder = TravelOrder::query()
+            ->firstWhere('status', '=', TravelOrderStatus::APPROVED);
+
+        $this->assertNotNull($travelOrder);
+
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token
+            ])
+            ->patch("/api/v1/travel-orders/$travelOrder->order_id/approve");
+
+        $response->assertBadRequest();
     }
 
     public function test_it_should_cancel_a_travel_order()
     {
+        $user = User::query()->firstWhere('is_admin', '=', true);
+        $token = JWTAuth::fromUser($user);
+
         /** @var TravelOrder $travelOrder */
         $travelOrder = TravelOrder::query()
             ->firstWhere('status', '=', TravelOrderStatus::REQUESTED->value);
@@ -56,10 +89,55 @@ class TravelOrderStatusTest extends TestCase
         $response = $this
             ->withHeaders([
                 'Accept' => 'application/json',
-                'Authorization' => 'Bearer ' . $this->token
+                'Authorization' => 'Bearer ' . $token
             ])
             ->patch("/api/v1/travel-orders/$travelOrder->order_id/cancel");
 
-        $response->assertOk();
+        $response->assertOk()->assertJson([
+            "message" => "Pedido cancelado com sucesso"
+        ]);
+    }
+
+    public function test_it_should_fail_to_cancel_a_travel_order_with_not_admin_user()
+    {
+        $user = User::query()->firstWhere('is_admin', '=', false);
+        $token = JWTAuth::fromUser($user);
+
+        /** @var TravelOrder $travelOrder */
+        $travelOrder = TravelOrder::query()->first();
+
+        $this->assertNotNull($travelOrder);
+
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token
+            ])
+            ->patch("/api/v1/travel-orders/$travelOrder->order_id/cancel");
+
+        $response->assertForbidden()->assertJson([
+            "message" => "Você não possui permissão para alterar status do pedido."
+        ]);
+    }
+
+    public function test_it_should_fail_to_cancel_a_already_cancelled_travel_order()
+    {
+        $user = User::query()->firstWhere('is_admin', '=', true);
+        $token = JWTAuth::fromUser($user);
+
+        /** @var TravelOrder $travelOrder */
+        $travelOrder = TravelOrder::query()
+            ->firstWhere('status', '=', TravelOrderStatus::CANCELLED);
+
+        $this->assertNotNull($travelOrder);
+
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $token
+            ])
+            ->patch("/api/v1/travel-orders/$travelOrder->order_id/cancel");
+
+        $response->assertBadRequest();
     }
 }
