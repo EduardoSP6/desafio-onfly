@@ -10,6 +10,7 @@ use Domain\Shared\ValueObject\OrderId;
 use Domain\Shared\ValueObject\Uuid;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
+use Infrastructure\Services\UserNotificationService;
 
 class ApproveTravelOrderUseCase
 {
@@ -28,6 +29,8 @@ class ApproveTravelOrderUseCase
         $travelOrder->changeStatus(TravelOrderStatus::APPROVED, $loggedUser);
 
         $this->travelOrderRepository->updateStatus($travelOrder);
+
+        UserNotificationService::sendTravelOrderStatusUpdatedNotification($travelOrder);
     }
 
     protected function findTravelOrder(string $orderId): TravelOrder

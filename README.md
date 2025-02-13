@@ -41,3 +41,28 @@ docker exec -it desafio-onfly-php composer analyse
 ```
 docker exec -it desafio-onfly-php php artisan test
 ```
+
+- Notificações:
+As notificações são enviadas por e-mail, neste caso o provedor de e-mail
+deverá ser configurado no arquivo .env.
+
+## Organização do código:
+
+A estrutura foi baseada em conceitos de Arquitetura Limpa e SOLID, onde a parte 
+do código que detém as regras de negócios está no diretório src.
+Este diretório está subdividido em:
+
+- Application - Camada responsável pelo fluxo da aplicação. 
+Nela estão os casos de uso, interfaces, Exceptions, etc.
+
+
+- Domain - Camada responsável por executar as regras de negócio. 
+Nela você encontrará as entidades, ValueObjects, Enums e Factories. 
+
+
+- Infrastructure - Camada dispõe de implementações concretas das interfaces, como:
+Repositories, DataMappers, Services, etc.
+
+
+- Testes - Camada responsável pelos testes de unidade e integração da aplicação.
+Os testes foram realizados com o PHPUnit e estão no diretório ./tests/
