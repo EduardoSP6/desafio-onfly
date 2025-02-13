@@ -6,6 +6,7 @@ use Application\Exception\DuplicatedTravelOrderException;
 use Application\Interfaces\TravelOrderRepository;
 use DateTimeImmutable;
 use Domain\Core\Entity\TravelOrder;
+use Domain\Core\Enum\TravelOrderStatus;
 use Domain\Shared\ValueObject\OrderId;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Infrastructure\Persistence\DataMappers\TravelOrderDataMapper;
@@ -57,9 +58,9 @@ class TravelOrderEloquentRepository implements TravelOrderRepository
             ->allowedFilters([
                 AllowedFilter::exact('status'),
                 AllowedFilter::partial('destination'),
-                AllowedFilter::callback('departure_date', function (Builder $query, array $value) {
+                AllowedFilter::callback('period', function (Builder $query, array $value) {
                     $query->whereDate('departure_date', '>=', $value[0])
-                        ->whereDate('departure_date', '<=', $value[1]);
+                        ->whereDate('return_date', '<=', $value[1]);
                 }),
             ])
             ->get();
@@ -80,6 +81,10 @@ class TravelOrderEloquentRepository implements TravelOrderRepository
         return TravelOrderModel::query()
             ->whereDate('departure_date', '>=', $departureDate->format('Y-m-d'))
             ->whereDate('return_date', '<=', $returnDate->format('Y-m-d'))
+            ->whereIn('status', [
+                TravelOrderStatus::REQUESTED->value,
+                TravelOrderStatus::APPROVED->value
+            ])
             ->exists();
     }
 }

@@ -8,21 +8,27 @@ use Application\Exception\DuplicatedTravelOrderException;
 use Application\UseCases\TravelOrder\Create\CreateTravelOrderInputDto;
 use Application\UseCases\TravelOrder\Create\CreateTravelOrderUseCase;
 use Application\UseCases\TravelOrder\Find\FindTravelOrderUseCase;
+use Application\UseCases\TravelOrder\ListAll\ListTravelOrdersUseCase;
 use DateTimeImmutable;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Infrastructure\Persistence\Repositories\TravelOrderEloquentRepository;
-use Infrastructure\Persistence\Repositories\UserEloquentRepository;
 
 class TravelOrderController extends Controller
 {
     private TravelOrderEloquentRepository $travelOrderEloquentRepository;
-    private UserEloquentRepository $userEloquentRepository;
 
-    public function __construct(TravelOrderEloquentRepository $travelOrderEloquentRepository, UserEloquentRepository $userEloquentRepository)
+    public function __construct(TravelOrderEloquentRepository $travelOrderEloquentRepository)
     {
         $this->travelOrderEloquentRepository = $travelOrderEloquentRepository;
-        $this->userEloquentRepository = $userEloquentRepository;
+    }
+
+    public function index(): AnonymousResourceCollection
+    {
+        $travelOrders = (new ListTravelOrdersUseCase($this->travelOrderEloquentRepository))->execute();
+
+        return TravelOrderResource::collection($travelOrders);
     }
 
     public function store(CreateTravelOrderRequest $request): JsonResponse
@@ -35,8 +41,7 @@ class TravelOrderController extends Controller
             );
 
             $createTravelOrderUseCase = new CreateTravelOrderUseCase(
-                $this->travelOrderEloquentRepository,
-                $this->userEloquentRepository
+                $this->travelOrderEloquentRepository
             );
 
             $createTravelOrderUseCase->execute($inputDto);

@@ -23,8 +23,8 @@ class TravelOrderResource extends JsonResource
             'orderId' => $this->travelOrder->getOrderId()->value(),
             'userName' => $this->travelOrder->getUser()->getName(),
             'destination' => $this->travelOrder->getDestination(),
-            'departureDate' => $this->travelOrder->getDepartureDate()->format('d/M/Y'),
-            'returnDate' => $this->travelOrder->getReturnDate()->format('d/M/Y'),
+            'departureDate' => $this->travelOrder->getDepartureDate()->format('d/m/Y'),
+            'returnDate' => $this->travelOrder->getReturnDate()->format('d/m/Y'),
             'status' => $this->travelOrder->getStatus()->value,
             'statusDescription' => $this->travelOrder->getStatus()->getDescription(),
         ];

@@ -16,7 +16,7 @@ class TravelOrderTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::query()->firstWhere('is_admin', '=', false);
+        $this->user = User::query()->firstWhere('email', '=', 'user1@onfly.com');
         $this->token = JWTAuth::fromUser($this->user);
     }
 
@@ -67,6 +67,125 @@ class TravelOrderTest extends TestCase
             'returnDate',
             'status',
             'statusDescription',
+        ]);
+    }
+
+    public function test_it_should_list_all_travel_orders_successfully()
+    {
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders");
+
+        $response->assertOk()->assertJsonStructure([
+            '*' => [
+                'uuid',
+                'orderId',
+                'userName',
+                'destination',
+                'departureDate',
+                'returnDate',
+                'status',
+                'statusDescription',
+            ]
+        ]);
+    }
+
+    public function test_it_should_list_all_travel_orders_filtering_by_destination()
+    {
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders?filter[destination]=South");
+
+        dump($response->json());
+
+        $response->assertOk()->assertJsonStructure([
+            '*' => [
+                'uuid',
+                'orderId',
+                'userName',
+                'destination',
+                'departureDate',
+                'returnDate',
+                'status',
+                'statusDescription',
+            ]
+        ]);
+    }
+
+    public function test_it_should_list_all_travel_orders_filtering_by_status()
+    {
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders?filter[status]=requested");
+
+        dump($response->json());
+
+        $response->assertOk()->assertJsonStructure([
+            '*' => [
+                'uuid',
+                'orderId',
+                'userName',
+                'destination',
+                'departureDate',
+                'returnDate',
+                'status',
+                'statusDescription',
+            ]
+        ]);
+    }
+
+    public function test_it_should_list_all_travel_orders_filtering_by_travel_period()
+    {
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders?filter[period]=2025-02-12,2025-02-13");
+
+        $response->assertOk()->assertJsonStructure([
+            '*' => [
+                'uuid',
+                'orderId',
+                'userName',
+                'destination',
+                'departureDate',
+                'returnDate',
+                'status',
+                'statusDescription',
+            ]
+        ]);
+    }
+
+    public function test_it_should_list_all_travel_orders_filtering_by_travel_period_and_destination()
+    {
+        $response = $this
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ])
+            ->get("/api/v1/travel-orders?filter[period]=2025-02-12,2025-02-13&filter[destination]=South");
+
+        $response->assertOk()->assertJsonStructure([
+            '*' => [
+                'uuid',
+                'orderId',
+                'userName',
+                'destination',
+                'departureDate',
+                'returnDate',
+                'status',
+                'statusDescription',
+            ]
         ]);
     }
 }
