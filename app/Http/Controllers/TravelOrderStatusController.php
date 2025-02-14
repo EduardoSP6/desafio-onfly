@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Application\Exception\CancellationDeadlineApprovedTravelOrderExceededException;
 use Application\Exception\InvalidTravelOrderStatusException;
 use Application\Exception\OperationNotPermittedException;
 use Application\UseCases\TravelOrder\Approve\ApproveTravelOrderUseCase;
 use Application\UseCases\TravelOrder\Cancel\CancelTravelOrderUseCase;
+use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Infrastructure\Persistence\Repositories\TravelOrderEloquentRepository;
 use OpenApi\Annotations as OA;
 
@@ -47,7 +50,7 @@ class TravelOrderStatusController extends Controller
      *                  description="Pedido aprovado com sucesso"
      *              ),
      *          ),
-     *    ),
+     *     ),
      *
      *     @OA\Response(
      *          response="403",
@@ -60,7 +63,7 @@ class TravelOrderStatusController extends Controller
      *                  description="Você não possui permissão para alterar status do pedido."
      *              ),
      *          ),
-     *    ),
+     *     ),
      *
      *     @OA\Response(
      *          response="400",
@@ -73,7 +76,20 @@ class TravelOrderStatusController extends Controller
      *                  description="O status do pedido não pode ser alterado."
      *              ),
      *          ),
-     *    ),
+     *     ),
+     *
+     *     @OA\Response(
+     *          response="500",
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  description="Erro ao aprovar pedido de viagem."
+     *              ),
+     *          ),
+     *     ),
      * )
      */
     public function approve(string $orderId): JsonResponse
@@ -84,8 +100,16 @@ class TravelOrderStatusController extends Controller
             return response()->json(["message" => "Pedido aprovado com sucesso"], 200);
         } catch (OperationNotPermittedException $e) {
             return response()->json(["message" => $e->getMessage()], 403);
-        } catch (InvalidTravelOrderStatusException $e) {
+        } catch (InvalidTravelOrderStatusException|CancellationDeadlineApprovedTravelOrderExceededException $e) {
             return response()->json(["message" => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            Log::error("Error to approve a travel order.", [
+                'class' => get_class($this),
+                'method' => 'approve',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(["message" => "Erro ao aprovar pedido de viagem."], 500);
         }
     }
 
@@ -117,7 +141,7 @@ class TravelOrderStatusController extends Controller
      *                  description="Pedido cancelado com sucesso"
      *              ),
      *          ),
-     *    ),
+     *     ),
      *
      *     @OA\Response(
      *          response="403",
@@ -130,7 +154,7 @@ class TravelOrderStatusController extends Controller
      *                  description="Você não possui permissão para alterar status do pedido."
      *              ),
      *          ),
-     *    ),
+     *     ),
      *
      *     @OA\Response(
      *          response="400",
@@ -143,7 +167,20 @@ class TravelOrderStatusController extends Controller
      *                  description="O status do pedido não pode ser alterado."
      *              ),
      *          ),
-     *    ),
+     *     ),
+     *
+     *     @OA\Response(
+     *          response="500",
+     *          description="Internal server error",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(
+     *                  property="message",
+     *                  type="string",
+     *                  description="Erro ao cancelar pedido de viagem."
+     *              ),
+     *          ),
+     *     ),
      * )
      */
     public function cancel(string $orderId): JsonResponse
@@ -156,6 +193,14 @@ class TravelOrderStatusController extends Controller
             return response()->json(["message" => $e->getMessage()], 403);
         } catch (InvalidTravelOrderStatusException $e) {
             return response()->json(["message" => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            Log::error("Error to approve a travel order.", [
+                'class' => get_class($this),
+                'method' => 'cancel',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(["message" => "Erro ao cancelar pedido de viagem."], 500);
         }
     }
 }

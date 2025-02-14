@@ -9,6 +9,7 @@ use Domain\Core\Enum\TravelOrderStatus;
 use Domain\Shared\ValueObject\OrderId;
 use Domain\Shared\ValueObject\Uuid;
 use DomainException;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Infrastructure\Services\UserNotificationService;
 
@@ -21,6 +22,9 @@ class ApproveTravelOrderUseCase
         $this->travelOrderRepository = $travelOrderRepository;
     }
 
+    /**
+     * @throws Exception
+     */
     public function execute(string $orderId): void
     {
         $travelOrder = $this->findTravelOrder($orderId);

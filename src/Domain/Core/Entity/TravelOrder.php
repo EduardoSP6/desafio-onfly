@@ -2,14 +2,17 @@
 
 namespace Domain\Core\Entity;
 
+use Application\Exception\CancellationDeadlineApprovedTravelOrderExceededException;
 use Application\Exception\InvalidTravelOrderStatusException;
 use Application\Exception\OperationNotPermittedException;
+use DateInterval;
 use DateTimeImmutable;
 use Domain\Core\Enum\TravelOrderStatus;
 use Domain\Shared\Entity\BaseEntity;
 use Domain\Shared\ValueObject\OrderId;
 use Domain\Shared\ValueObject\Uuid;
 use DomainException;
+use Exception;
 
 class TravelOrder extends BaseEntity
 {
@@ -22,6 +25,8 @@ class TravelOrder extends BaseEntity
     private TravelOrderStatus $status;
     private DateTimeImmutable $createdAt;
     private DateTimeImmutable|null $updatedAt;
+
+    const DAYS_TO_CANCEL_APPROVED_ORDER = 2;
 
     public function __construct(Uuid $uuid, OrderId $orderId, User $user, string $destination, DateTimeImmutable $departureDate, DateTimeImmutable $returnDate, TravelOrderStatus $status, DateTimeImmutable $createdAt, ?DateTimeImmutable $updatedAt = null)
     {
@@ -101,7 +106,11 @@ class TravelOrder extends BaseEntity
         return $this->status;
     }
 
-    public function changeStatus(TravelOrderStatus $status, User $loggedUser): void
+
+    /**
+     * @throws Exception
+     */
+    public function changeStatus(TravelOrderStatus $newStatus, User $loggedUser): void
     {
         throw_if(!$loggedUser->isAdmin(),
             new OperationNotPermittedException(
@@ -110,13 +119,30 @@ class TravelOrder extends BaseEntity
         );
 
         throw_if(
-            in_array($this->status, [TravelOrderStatus::APPROVED, TravelOrderStatus::CANCELLED]),
+            $this->status === TravelOrderStatus::CANCELLED,
             new InvalidTravelOrderStatusException(
-                "Pedido com status " . $this->status->getDescription() . " não pode ser alterado."
+                "Pedido com status {$this->status->getDescription()} não pode ser alterado."
             )
         );
 
-        $this->status = $status;
+        if ($this->status === TravelOrderStatus::APPROVED &&
+            $newStatus === TravelOrderStatus::CANCELLED) {
+            $deadlineToCancel = $this->departureDate->sub(
+                new DateInterval("P" . self::DAYS_TO_CANCEL_APPROVED_ORDER . "D")
+            );
+
+            $canCancel = (new DateTimeImmutable())->format('Y-m-d') <= $deadlineToCancel->format('Y-m-d');
+
+            throw_if(
+                !$canCancel,
+                new CancellationDeadlineApprovedTravelOrderExceededException(
+                    "Pedido aprovado não pode ser cancelado pois já ultrapassou o prazo limite para cancelamento de " .
+                    self::DAYS_TO_CANCEL_APPROVED_ORDER . " dias antes da viagem."
+                )
+            );
+        }
+
+        $this->status = $newStatus;
     }
 
     /**
